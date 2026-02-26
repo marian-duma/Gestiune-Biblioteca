@@ -1,6 +1,6 @@
 #include "abonat.h"
 
-abonat::abonat(uint id, string nume, string prenume, string nr_telefon, string email, string cnp, Judet loc)
+abonat::abonat(int id, string nume, string prenume, string nr_telefon, string email, string cnp, Judet loc)
 {
     this->id = id;
     this->nume = nume;
@@ -13,7 +13,7 @@ abonat::abonat(uint id, string nume, string prenume, string nr_telefon, string e
 
 abonat::abonat(vector<string> arr)
 {
-    id = (uint)atoi(arr[0].c_str());
+    id = (int)atoi(arr[0].c_str());
     nume = arr[1];
     prenume = arr[2];
     numar_telefon = arr[3];
@@ -25,5 +25,5 @@ abonat::abonat(vector<string> arr)
 string abonat::abonat_to_file()
 {
     return to_string(id) + sep + nume + sep + prenume + sep +
-    numar_telefon + sep + email + sep + cnp + sep + judetToString(locul_nasterii) + '\n';
+    numar_telefon + sep + email + sep + cnp + sep + judetToString(locul_nasterii) + sep + '\n';
 }

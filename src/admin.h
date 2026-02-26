@@ -27,7 +27,7 @@ class admin{
         void remove_abonat(string info);
         void remove_book(string info);
 
-        static string str_to_upper(string str);
+        carte get_carte(string isbn);
 
         void set_abonati(const std::vector<abonat>& v) 
         {

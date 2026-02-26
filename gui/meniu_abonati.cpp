@@ -14,6 +14,7 @@ enum show {
     EDIT,
     REMOVE,
     SHOW,
+    MESAJ,
 };
 
 void open_meniu_abonati() {
@@ -41,7 +42,7 @@ void open_meniu_abonati() {
     
     
     admin_fisier admin("info/abonati.txt", "info/carti.txt");
-    static uint nextId = 0;
+    static int nextId = 0;
     
     admin.read_all_readers();
     for(auto& a: admin.get_abonati()) nextId = a.get_id() + 1; //Obtine ultimul ID salvat + 1.
@@ -49,6 +50,7 @@ void open_meniu_abonati() {
     vector<abonat> v;
     abonat Abonat; 
     string info;
+    string mesaj;
     show stare = DEFAULT;
     // Resetăm focusul pentru câmpurile de text
     for (auto& input : prompt) {
@@ -65,17 +67,37 @@ void open_meniu_abonati() {
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (add_abonat.isClicked(sf::Mouse::getPosition(window))) {
                     stare = ADD;
+                    for(auto& tx: prompt) tx.setText("");
                     submitButton.setText("ADAUGA");
                 }
                 if(find_abonat.isClicked(sf::Mouse::getPosition(window))){
                     stare = SEARCH;
+                    for(auto& tx: prompt) tx.setText("");
                     submitButton.setText("CAUTA");
                 }
                 if(modify_abonat.isClicked(sf::Mouse::getPosition(window))){
+                    if(Abonat.get_cnp() == "" || Abonat.get_cnp() == "NECUNOSCUT")
+                    {
+                        mesaj = "Nu ati selectat un abonat.\nUtilizati optiunea de cautare!";
+                        stare = MESAJ;
+                        break;
+                    }
+                    prompt[0].setText(Abonat.get_nume());
+                    prompt[1].setText(Abonat.get_prenume());
+                    prompt[2].setText(Abonat.get_cnp());
+                    prompt[3].setText(judetToString(Abonat.get_loc_nastere()));
+                    prompt[4].setText(Abonat.get_numar_telefon());
+                    prompt[5].setText(Abonat.get_email());
                     stare = EDIT;
                     submitButton.setText("SALVEAZA");
                 }
                 if(delete_abonat.isClicked(sf::Mouse::getPosition(window))){
+                    if(Abonat.get_cnp() == "" || Abonat.get_cnp() == "NECUNOSCUT")
+                    {
+                        mesaj = "Nu ati selectat un abonat.\nUtilizati optiunea de cautare!";
+                        stare = MESAJ;
+                        break;
+                    }
                     stare = REMOVE;
                     submitButton.setText("STERGE");
                 }
@@ -83,24 +105,52 @@ void open_meniu_abonati() {
                     window.close();
                 }
 
-                // Verificăm dacă butonul de submit a fost apăsat
                 if (submitButton.isClicked(sf::Mouse::getPosition(window))) {
                     switch(stare) {
                         case ADD:
+                            for(auto& tx: prompt)
+                            {
+                                if(tx.getText() == "")
+                                {
+                                    mesaj = "Toate campurile sunt obligatorii!";
+                                    stare = MESAJ;
+                                    break;
+                                }
+                            }
+                            if(stare == MESAJ){break;}
+                            Abonat = admin.find_abonat(prompt[2].getText()); //cautare dupa CNP.
+                            if(Abonat.get_cnp() != "NECUNOSCUT")
+                            {
+                                mesaj = "Nu pot exista 2 abonati cu acelasi CNP!";
+                                stare = MESAJ;
+                                break;
+                            }
                             update(prompt, Abonat);
                             Abonat.set_id(nextId++);
-                    
+
                             for(auto& tx: prompt) tx.setText("");
-                            std::cout << "Abonat adaugat!" << std::endl;
                             admin.add(Abonat);
                             admin.write(Abonat);
-                            stare = DEFAULT;
+                            mesaj = "Abonat adaugat cu succes!";
+                            stare = MESAJ;
                             break;
                     
                         case SEARCH:
                             get_info(prompt, info);
                             for(auto& tx: prompt) tx.setText("");
                             Abonat = admin.find_abonat(info);
+                            if(Abonat.get_cnp() == "NECUNOSCUT")
+                            {
+                                mesaj = "Abonatul nu a fost gasit!";
+                                stare = MESAJ;
+                                break;
+                            }
+                            prompt[0].setText(Abonat.get_nume());
+                            prompt[1].setText(Abonat.get_prenume());
+                            prompt[2].setText(Abonat.get_cnp());
+                            prompt[3].setText(judetToString(Abonat.get_loc_nastere()));
+                            prompt[4].setText(Abonat.get_numar_telefon());
+                            prompt[5].setText(Abonat.get_email());
                             stare = SHOW;
                             break;
                         case EDIT:
@@ -109,39 +159,38 @@ void open_meniu_abonati() {
                             {
                                 if(v[i] == Abonat)
                                 {
-                                    update(prompt, v[i]);
+                                    update(prompt, Abonat);
+                                    update(prompt, v[1]);
                                     admin.set_abonati(v);
                                 }
                             }
-                            for(auto& tx: prompt) tx.setText("");
                             admin.write_all_readers();
-                            stare = DEFAULT;
+                            mesaj = "Abonatul a fost modificat!";
+                            stare = MESAJ;
                             break;
                         case REMOVE:
-                            get_info(prompt, info);
-                            admin.remove_abonat(info);
+                            admin.remove_abonat(Abonat.get_cnp());
                             for(auto& tx: prompt) tx.setText("");
                             admin.write_all_readers();
-                            stare = DEFAULT;
+                            mesaj = "Abonatul a fost sters!";
+                            stare = MESAJ;
                             break;
                         default:
                             stare = DEFAULT;
                             break;
                     }
                 }
-
-                // Verificăm pe care câmp de text am dat click
+                //Verifica daca am selectat un text_input pentru a introduce textul.
                 bool anyInputFocused = false;
                 for (auto& input : prompt) {
                     if (input.isMouseOver(sf::Mouse::getPosition(window))) {
-                        input.setFocus(true); // Setăm focusul pe câmpul selectat
+                        input.setFocus(true);
                         anyInputFocused = true;
                     } else {
-                        input.setFocus(false); // Resetăm focusul pentru restul
+                        input.setFocus(false);
                     }
                 }
 
-                // Dacă nu am dat click pe niciun câmp de text, resetăm focusul
                 if (!anyInputFocused) {
                     for (auto& input : prompt) {
                         input.setFocus(false);
@@ -149,7 +198,6 @@ void open_meniu_abonati() {
                 }
             }
 
-            // Procesăm evenimentele pentru fiecare câmp de text
             for (auto& input : prompt) {
                 input.handleEvent(event);
             }
@@ -157,25 +205,37 @@ void open_meniu_abonati() {
 
         window.clear(sf::Color(51, 51, 51));
 
-        // Desenăm butoanele
         add_abonat.draw(window);
         find_abonat.draw(window);
         modify_abonat.draw(window);
         delete_abonat.draw(window);
         exit.draw(window);
 
-        // Desenăm câmpurile de text doar dacă promptul este activ
-        if (stare == ADD || stare == SEARCH || stare == EDIT || stare == REMOVE) {
-            for (text_input& tx : prompt) {
+        
+        if (stare == ADD || stare == EDIT) {
+            for (text_input& tx : prompt)
                 tx.draw(window);
-                submitButton.draw(window);
-            }
+            submitButton.draw(window);
+        }
+        if(stare == SEARCH)
+        {
+            prompt[0].draw(window);
+            prompt[1].draw(window);
+            submitButton.draw(window);
         }
         if(stare == SHOW)
         {
             afisare_abonat(window, font, Abonat);
         }
-
+        if(stare == REMOVE)
+        {
+            afisare_abonat(window, font, Abonat);
+            submitButton.draw(window);
+        }
+        if(stare == MESAJ)
+        {
+            afisare_mesaj(window, font, mesaj);
+        }
         window.display();
     }
 }

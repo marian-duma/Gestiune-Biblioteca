@@ -11,7 +11,7 @@ text_input::text_input(sf::Vector2f position, sf::Vector2f size, sf::Font& font,
     inputText.setFont(font);
     inputText.setCharacterSize(characterSize);
     inputText.setFillColor(sf::Color::Black);
-    inputText.setPosition(position.x + 5, position.y); // Add some padding
+    inputText.setPosition(position.x + 5, position.y);
     cursor.setFillColor(sf::Color::Black);
 
      label.setFont(font);
@@ -53,7 +53,7 @@ void text_input::draw(sf::RenderWindow& window) {
     cursor.setPosition(inputText.getPosition().x + inputText.getLocalBounds().width + 2, inputText.getPosition().y + 5);
     window.draw(inputBox);
     window.draw(inputText);
-    if (isFocused && showCursor) {  // Afișează cursorul doar dacă câmpul are focus
+    if (isFocused && showCursor) {
         window.draw(cursor);
     }
     window.draw(label);

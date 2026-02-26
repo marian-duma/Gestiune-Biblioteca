@@ -21,6 +21,7 @@ class Button {
         void setText(std::string txt);
         void draw(sf::RenderWindow& window);
         bool isClicked(sf::Vector2i mousePos);
+        void OffsetText();
         
 };
 

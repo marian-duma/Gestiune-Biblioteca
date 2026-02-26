@@ -7,13 +7,14 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-enum CarteMenuState {
-    C_DEFAULT,
-    C_ADD,
-    C_SEARCH,
-    C_EDIT,
-    C_REMOVE,
-    C_SHOW,
+enum show {
+    DEFAULT,
+    ADD,
+    SEARCH,
+    EDIT,
+    REMOVE,
+    SHOW,
+    MESAJ,
 };
 
 void open_meniu_carti() {
@@ -21,9 +22,9 @@ void open_meniu_carti() {
     sf::Font font;
     if (!font.loadFromFile("gui/Arial.ttf")) {
         std::cerr << "Eroare la incarcarea fontului.\n";
+        window.close();
         return;
     }
-
     // Butoane
     Button add_book(default_param(0), "Adauga carte");
     Button find_book(default_param(1), "Cauta carte");
@@ -36,18 +37,18 @@ void open_meniu_carti() {
     prompt.push_back(text_input(sf::Vector2f(300, 50), sf::Vector2f(200, 30), font, 20, "Titlu"));
     prompt.push_back(text_input(sf::Vector2f(300, 120), sf::Vector2f(200, 30), font, 20, "Autor"));
     prompt.push_back(text_input(sf::Vector2f(300, 190), sf::Vector2f(200, 30), font, 20, "Editura"));
-    prompt.push_back(text_input(sf::Vector2f(300, 260), sf::Vector2f(200, 30), font, 20, "Pret"));
-    prompt.push_back(text_input(sf::Vector2f(300, 330), sf::Vector2f(200, 30), font, 20, "Nr. pagini"));
+    prompt.push_back(text_input(sf::Vector2f(300, 260), sf::Vector2f(200, 30), font, 20, "Nr. pagini"));
 
     Button submitButton(sf::Vector2f(300, 500), sf::Vector2f(200, 50), sf::Color(0, 168, 107), "Submit");
 
     admin_fisier admin("info/abonati.txt", "info/carti.txt");
     admin.read_all_books();
     vector<carte> carti;
-    carte Carte;
+    carte Carte("", "", "", 0);
+    Carte.set_isbn("");
     string info;
-    CarteMenuState stare = C_DEFAULT;
-
+    string mesaj;
+    show stare = DEFAULT;
     for (auto& input : prompt)
         input.setFocus(false);
 
@@ -59,19 +60,37 @@ void open_meniu_carti() {
 
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (add_book.isClicked(sf::Mouse::getPosition(window))) {
-                    stare = C_ADD;
+                    stare = ADD;
+                    for(auto& tx: prompt) tx.setText("");
                     submitButton.setText("ADAUGA");
                 }
                 if (find_book.isClicked(sf::Mouse::getPosition(window))) {
-                    stare = C_SEARCH;
+                    stare = SEARCH;
+                    for(auto& tx: prompt) tx.setText("");
                     submitButton.setText("CAUTA");
                 }
                 if (modify_book.isClicked(sf::Mouse::getPosition(window))) {
-                    stare = C_EDIT;
+                    if(Carte.get_isbn() == "" || Carte.get_isbn() == "NECUNOSCUT")
+                    {
+                        mesaj = "Nu ati selectat o carte.\nUtilizati optiunea de cautare!";
+                        stare = MESAJ;
+                        break;
+                    }
+                    prompt[0].setText(Carte.get_titlu());
+                    prompt[1].setText(Carte.get_autor());
+                    prompt[2].setText(Carte.get_editura());
+                    prompt[3].setText(to_string(Carte.get_numar_pagini()));
+                    stare = EDIT;
                     submitButton.setText("SALVEAZA");
                 }
                 if (delete_book.isClicked(sf::Mouse::getPosition(window))) {
-                    stare = C_REMOVE;
+                    if(Carte.get_isbn() == "" || Carte.get_isbn() == "NECUNOSCUT")
+                    {
+                        mesaj = "Nu ati selectat o carte.\nUtilizati optiunea de cautare!";
+                        stare = MESAJ;
+                        break;
+                    }
+                    stare = REMOVE;
                     submitButton.setText("STERGE");
                 }
                 if (exit.isClicked(sf::Mouse::getPosition(window))) {
@@ -80,52 +99,83 @@ void open_meniu_carti() {
 
                 if (submitButton.isClicked(sf::Mouse::getPosition(window))) {
                     switch (stare) {
-                        case C_ADD:
+                        case ADD:
+                            for(auto& tx: prompt)
+                            {
+                                if(tx.getText() == "")
+                                {
+                                    mesaj = "Toate campurile sunt obligatorii!";
+                                    stare = MESAJ;
+                                    break;
+                                }
+                            }
+                            if(stare == MESAJ){break;}    
+                            Carte = admin.find_book(prompt[0].getText() + ' ' + prompt[1].getText());
+                            if(Carte.get_isbn() != "NECUNOSCUT")
+                            {
+                                mesaj = "Nu pot exista 2 carti cu acelasi titlu si autor";
+                                stare = MESAJ;
+                                break;
+                            }
                             Carte.set_titlu(prompt[0].getText());
                             Carte.set_autor(prompt[1].getText());
                             Carte.set_editura(prompt[2].getText());
-                            Carte.set_pret(std::stoi(prompt[3].getText()));
-                            Carte.set_numar_pagini(std::stoi(prompt[4].getText()));
+                            if(isNumber(prompt[3].getText()))
+                            {
+                                Carte.set_numar_pagini(std::stoi(prompt[3].getText()));
+                            }else{
+                                Carte.set_numar_pagini(-1);
+                            }
                             Carte.set_isbn(carte::genereazaISBN());
                             for (auto& tx : prompt) tx.setText("");
-                            std::cout << "Carte adaugata!\n";
                             admin.add(Carte);
                             admin.write(Carte);
-                            stare = C_DEFAULT;
+                            mesaj = "Carte adaugata cu succes!";
+                            stare = MESAJ;
                             break;
 
-                        case C_SEARCH:
-                            get_info_carte(prompt, info);; // presupunem că titlul e folosit pentru căutare
-                            Carte = admin.find_book(info);
-                            for (auto& tx : prompt) tx.setText("");
-                            stare = C_SHOW;
+                        case SEARCH:
+                            Carte = admin.find_book(prompt[0].getText() + ' ' + prompt[1].getText());
+                            for(auto& tx: prompt) tx.setText("");
+                            if(Carte.get_isbn() == "NECUNOSCUT")
+                            {
+                                mesaj = "Cartea nu a fost gasita!";
+                                stare = MESAJ;
+                                break;
+                            }
+                            prompt[0].setText(Carte.get_titlu());
+                            prompt[1].setText(Carte.get_autor());
+                            prompt[2].setText(Carte.get_editura());
+                            prompt[3].setText(to_string(Carte.get_numar_pagini()));
+                            stare = SHOW;
                             break;
 
-                        case C_EDIT:
+                        case EDIT:
                             carti = admin.get_books();
                             for(size_t i = 0; i < carti.size(); i++)
                             {
                                 if(carti[i] == Carte)
                                 {
+                                    update(prompt, Carte);
                                     update(prompt, carti[i]);
                                     admin.set_books(carti);
                                 }
                             }
-                            for (auto& tx : prompt) tx.setText("");
                             admin.write_all_books();
-                            stare = C_DEFAULT;
+                            mesaj = "Cartea a fost modificata";
+                            stare = MESAJ;
                             break;
 
-                        case C_REMOVE:
-                            info = prompt[0].getText(); // din nou, după titlu
-                            admin.remove_book(info);
+                        case REMOVE:
+                            admin.remove_book(Carte.get_isbn());
                             for (auto& tx : prompt) tx.setText("");
                             admin.write_all_books();
-                            stare = C_DEFAULT;
+                            mesaj = "Cartea a fost stearsa!";
+                            stare = MESAJ;
                             break;
 
                         default:
-                            stare = C_DEFAULT;
+                            stare = DEFAULT;
                             break;
                     }
                 }
@@ -157,14 +207,29 @@ void open_meniu_carti() {
         delete_book.draw(window);
         exit.draw(window);
 
-        if (stare == C_ADD || stare == C_SEARCH || stare == C_EDIT || stare == C_REMOVE) {
+        
+        if (stare == ADD || stare == EDIT) {
             for (text_input& tx : prompt)
                 tx.draw(window);
             submitButton.draw(window);
         }
-
-        if (stare == C_SHOW) {
-            afisare_carte(window, font, Carte); // trebuie să ai funcția implementată
+        if(stare == SEARCH)
+        {
+            prompt[0].draw(window);
+            prompt[1].draw(window);
+            submitButton.draw(window);
+        }
+        if (stare == SHOW) {
+            afisare_carte(window, font, Carte);
+        }
+        if(stare == REMOVE)
+        {
+            afisare_carte(window, font, Carte);
+            submitButton.draw(window);
+        }
+        if(stare == MESAJ)
+        {
+            afisare_mesaj(window, font, mesaj);
         }
 
         window.display();

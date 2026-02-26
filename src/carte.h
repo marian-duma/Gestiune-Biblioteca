@@ -14,24 +14,21 @@ class carte
         string autor;
         string isbn;
         string editura;
-        uint pret;
-        uint numar_pagini;
+        int numar_pagini;
     public:    
         carte(){}
-        carte(string titlu, string autor, string editura, uint pret, uint numar_pagini);
+        carte(string titlu, string autor, string editura, int numar_pagini);
         carte(vector<string> linieFisier);
         
         string get_titlu() {return this->titlu;}
         string get_autor() {return this->autor;}
         string get_editura() {return this->editura;}
-        uint get_pret() {return this->pret;}
-        uint get_numar_pagini() {return this->numar_pagini;}
+        int get_numar_pagini() {return this->numar_pagini;}
         string get_isbn() {return this->isbn;}
-        
+
         void set_titlu(string nume);
         void set_autor(string autor) {this->autor = autor;}
-        void set_pret(uint pret);
-        void set_numar_pagini(const uint numar_pagini);
+        void set_numar_pagini(const int numar_pagini);
         void set_editura(string editura) {this->editura = editura;}
         void set_isbn(string isbn) {this->isbn = isbn;}
         string carte_to_file();

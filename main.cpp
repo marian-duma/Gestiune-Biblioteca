@@ -7,6 +7,7 @@
 #include "gui/text_input.h"
 #include "gui/meniu_abonati.h"
 #include "gui/meniu_carti.h"
+#include "gui/meniu_gestiune.h"
 
 using namespace std;
 
@@ -22,15 +23,12 @@ int main()
     
     Button abonati = Button(default_param(0), "Optiuni abonati");
     Button carti = Button(default_param(1), "Optiuni carti");
-    Button reviste = Button(default_param(2), "Optiuni reviste");
+    Button gestiune = Button(default_param(2), "Imprumut/retur");
     Button exit = Button(default_param(3), "Exit");
     
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-            }
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) 
             {
                     if(abonati.isClicked(sf::Mouse::getPosition(window)))
@@ -43,6 +41,11 @@ int main()
                         window.setActive(false);
                         open_meniu_carti();
                     }
+                    if(gestiune.isClicked(sf::Mouse::getPosition(window)))
+                    {
+                        window.setActive(false);
+                        open_meniu_gestiune();
+                    }
                     if(exit.isClicked(sf::Mouse::getPosition(window)))
                     {
                         window.close();
@@ -53,7 +56,8 @@ int main()
                 
                 abonati.draw(window);
                 carti.draw(window);
-                reviste.draw(window);
+              
+                gestiune.draw(window);
                 exit.draw(window);
                 
                 window.display();

@@ -1,12 +1,11 @@
 #include "carte.h"
 
-carte::carte(string titlu, string autor, string editura, uint pret, uint numar_pagini)
+carte::carte(string titlu, string autor, string editura, int numar_pagini)
 {
     this->isbn = genereazaISBN();
     this->titlu = titlu;
     this->autor = autor;
     this->editura = editura;
-    this->pret = pret;
     this->numar_pagini = numar_pagini;
 }
 
@@ -16,14 +15,13 @@ carte::carte(vector<string> arr)
     titlu = arr[1];
     autor = arr[2];
     editura = arr[3];
-    pret = (uint) atoi(arr[4].c_str());
-    numar_pagini = (uint)atoi(arr[5].c_str());
+    numar_pagini = (int)atoi(arr[4].c_str());
 }
 
 string carte::carte_to_file()
 {
     return isbn + sep + titlu + sep + autor + sep + editura +
-           sep + to_string(pret) + sep + to_string(numar_pagini) + sep + '\n';
+           sep + to_string(numar_pagini) + sep + '\n';
 
 }
 
@@ -33,12 +31,7 @@ void carte::set_titlu(string titlu)
     this->titlu = titlu;
 }
 
-void carte::set_pret(uint pret)
-{
-    this->pret = pret;
-}
-
-void carte::set_numar_pagini(uint numar_pagini)
+void carte::set_numar_pagini(int numar_pagini)
 {
     this->numar_pagini = numar_pagini;
 }
@@ -51,9 +44,9 @@ int carte::calculeazaCifraControl(string isbn) {
     for (int i = 0; i < 12; i++) {
         int cifra = isbn[i] - '0';
         if (i % 2 == 0)
-            suma += cifra;       // pozitie impara (0, 2, 4...): adaugam
+            suma += cifra;       // pozitie impara (0, 2, 4...): adaugam la suma
         else
-            suma += cifra * 3;   // pozitie para (1, 3, 5...): inmultim cu 3 si adaugam
+            suma += cifra * 3;   // pozitie para (1, 3, 5...): inmultim cu 3 si adaugam la suma
     }
 
     int rest = suma % 10;

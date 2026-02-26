@@ -112,22 +112,3 @@ void admin_fisier::write_all_readers()
     }
     fisier_abonati.close();
 }    
-
-vector<string> admin_fisier::split(string str)
-{
-    vector<string> arr;
-    string word = "";
-    for(char ch: str)
-    {
-        if(ch == ';')
-        {
-            arr.push_back(word);
-            word = "";
-        }
-        else
-        {
-            word += ch;
-        }
-    }
-    return arr;
-}

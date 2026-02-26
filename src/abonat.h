@@ -11,7 +11,7 @@ class abonat
 {
     private:
         char sep = ';';
-        uint id;
+        int id;
 
         string nume;
         string prenume;
@@ -22,10 +22,10 @@ class abonat
         string email;
     public:
         abonat(){}
-        abonat(uint id, string nume, string prenume, string nr_telefon, string email, string cnp, Judet loc);
+        abonat(int id, string nume, string prenume, string nr_telefon, string email, string cnp, Judet loc);
         abonat(vector<string> linieFisier);
-        // Getteri pentru fiecare atribut
-        uint get_id() const { return id; }
+        
+        int get_id() const { return id; }
         string get_nume() const { return nume; }
         string get_prenume() const { return prenume; }
         string get_cnp() const { return cnp; }
@@ -33,10 +33,9 @@ class abonat
         string get_numar_telefon() const { return numar_telefon; }
         string get_email() const { return email; }
 
-        // Setteri pentru fiecare atribut
         void set_nume(string nume) { this->nume = nume; }
         void set_prenume(string prenume) { this->prenume = prenume; }
-        void set_id(uint id) { this->id = id; }
+        void set_id(int id) { this->id = id; }
         void set_email(string email) { this->email = email; }
         void set_telefon(string nr_telefon) { this->numar_telefon = nr_telefon; }
         void set_cnp(string cnp) { this->cnp = cnp; }

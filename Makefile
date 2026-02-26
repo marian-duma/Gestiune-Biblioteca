@@ -1,32 +1,35 @@
-# Compilator și flag-uri
-CC = g++
-CFLAGS = -Wall -Werror -Wextra -Iinclude
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+# Compiler and flags
+CC = mingw64\bin\g++
+CFLAGS = -Wall -Werror -Wextra -Iinclude -ISFML-2.6.1\include -LSFML-2.6.1\lib -mwindows -g
 
-# Surse și directoare
+# SFML libraries (adjust the path if needed)
+SFML_FLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+
+# Directories and files
 SRC_DIRS = src gui
 SRC_FILES = main.cpp $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
 OBJ_FILES = $(SRC_FILES:.cpp=.o)
 
-# Executabil
-TARGET = main
+# Output target
+TARGET = main.exe
 
-# Regula implicită
+# Build target
 all: $(TARGET)
 
-# Linkarea obiectelor într-un executabil
 $(TARGET): $(OBJ_FILES)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(SFML_FLAGS)
 
-# Regula pentru a compila fișiere .cpp în .o
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Curățare fișiere temporare
+# Clean command for Windows (use cmd-compatible command)
 clean:
-	rm -f $(OBJ_FILES) $(TARGET)
+	del /Q $(subst /,\,$(OBJ_FILES)) $(TARGET) 2> NUL || exit 0
+	del .\info\*.txt
 
-# Rulare (opțional)
+# Run the program
 run: all
-	./$(TARGET)
+	$(TARGET)
+
+# Rebuild target
 rebuild: clean all

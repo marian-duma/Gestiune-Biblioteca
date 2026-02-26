@@ -6,7 +6,7 @@
 #include <fstream>
 
 #include "admin.h"
-
+#include "functii.h"
 using namespace std;
 
 class admin_fisier : public admin
@@ -22,8 +22,6 @@ class admin_fisier : public admin
         admin_fisier(string fisierAbonati, string fisierCarti);
         void write(abonat& c);
         void write(carte& c);
-        
-        static vector<string> split(string str);
 
         abonat read_next_abonat();
         carte read_next_book();
