@@ -1,4 +1,5 @@
 # Gestiune-Biblioteca
+Aplicatie grafica folosind SFML2 pentru disciplina Proiectarea Aplicatiilor Orientate pe Obiecte - Proiect. 
 Pentru a compila si rula aplicatia:
 • cd Gestiune-Biblioteca
 • .\mingw64\bin\mingw32-make
